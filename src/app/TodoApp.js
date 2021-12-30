@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import TodoList from './views/TodoList';
 import DeleteIcon from '@mui/icons-material/Delete';
+import axios from 'axios';
 
 class TodoApp extends React.Component {
 
@@ -115,23 +116,11 @@ class TodoApp extends React.Component {
 
       try {
 
-        const itemsUrl = `https://my-json-server.typicode.com/OsamaShahid/dev/items`;
-        const itemsHeaders = new Headers({
-          'Content-Type': 'application/json'
-        });
-        const itemsRequest = new Request(itemsUrl, {
-          method: 'GET',
-          headers: itemsHeaders,
-          mode: 'cors',
-          cache: 'default',
-        });
+        let itemsRes = await axios.get(`https://my-json-server.typicode.com/OsamaShahid/dev/items`);
 
-        let itemsRes = await fetch(itemsRequest);
-
-        if (itemsRes.ok) {
-          itemsRes = await itemsRes.json();
+        if (itemsRes.data) {
           this.setState(state => ({
-            items: itemsRes
+            items: itemsRes.data
           }));
         }
 
