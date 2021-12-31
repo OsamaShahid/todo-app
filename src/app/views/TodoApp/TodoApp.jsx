@@ -4,14 +4,37 @@ import AddIcon from '@mui/icons-material/Add';
 import UpdateIcon from '@mui/icons-material/Update';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import TodoList from './views/TodoList';
+import TodoList from '../../views/TodoList';
 import DeleteIcon from '@mui/icons-material/Delete';
+import axios from 'axios';
+
+const ButtonText = {
+  ADD: 'Add',
+  UPDATE: 'Update'
+}
+
+const buttonVariant = {
+  OUTLINED: 'outlined'
+}
+
+const buttonIcon = {
+  ADD: <AddIcon />,
+  UPDATE: <UpdateIcon />
+}
+
+
 
 class TodoApp extends React.Component {
 
     constructor(props) {
       super(props);
-      this.state = { items: [], text: '', updatingItem: null };
+      this.state = { 
+        items: [],
+        text: '',
+        updatingItem: null,
+        inputButtonText: ButtonText.ADD,
+        inputButtonIcon: buttonIcon.ADD
+      };
       this.handleChange = this.handleChange.bind(this);
       this.handleSubmit = this.handleSubmit.bind(this);
       this.handleItemDelete = this.handleItemDelete.bind(this);
@@ -30,8 +53,8 @@ class TodoApp extends React.Component {
       return (
         <Box sx={{ '& > :not(style)': { m: 1 } }}>
             <TextField id="new-todo" onChange={this.handleChange} size="small" label="What needs to be done?" variant="outlined" value={this.state.text} />
-            {!this.state.updatingItem && <Button variant="outlined" onClick={this.handleSubmit} startIcon={<AddIcon />}>
-                Add
+            {!this.state.updatingItem && <Button variant={buttonVariant.OUTLINED} onClick={this.handleSubmit} startIcon={this.state.inputButtonIcon}>
+                {this.state.inputButtonText}
             </Button>}
              {this.state.updatingItem && <Button variant="outlined" onClick={this.handleSubmit} startIcon={<UpdateIcon />}>
                 Update
@@ -74,7 +97,9 @@ class TodoApp extends React.Component {
         this.setState(state => ({
           items,
           text: '',
-          updatingItem: null
+          updatingItem: null,
+          inputButtonText: ButtonText.ADD,
+          inputButtonIcon: buttonIcon.UPDATE
         }));
 
       }
@@ -98,7 +123,9 @@ class TodoApp extends React.Component {
 
       this.setState(state => ({
           text: item.text,
-          updatingItem: item
+          updatingItem: item,
+          inputButtonText: ButtonText.UPDATE,
+          inputButtonIcon: buttonIcon.UPDATE
         }));
       
     }
@@ -107,7 +134,9 @@ class TodoApp extends React.Component {
 
       this.setState({
         items: [],
-        updatingItem: null
+        updatingItem: null,
+        inputButtonText: ButtonText.ADD,
+        inputButtonIcon: buttonIcon.UPDATE
       });
     }
 
@@ -115,23 +144,11 @@ class TodoApp extends React.Component {
 
       try {
 
-        const itemsUrl = `https://my-json-server.typicode.com/OsamaShahid/dev/items`;
-        const itemsHeaders = new Headers({
-          'Content-Type': 'application/json'
-        });
-        const itemsRequest = new Request(itemsUrl, {
-          method: 'GET',
-          headers: itemsHeaders,
-          mode: 'cors',
-          cache: 'default',
-        });
+        let itemsRes = await axios.get(`https://my-json-server.typicode.com/OsamaShahid/dev/items`);
 
-        let itemsRes = await fetch(itemsRequest);
-
-        if (itemsRes.ok) {
-          itemsRes = await itemsRes.json();
+        if (itemsRes.data) {
           this.setState(state => ({
-            items: itemsRes
+            items: itemsRes.data
           }));
         }
 
