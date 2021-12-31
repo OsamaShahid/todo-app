@@ -6,7 +6,6 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import TodoList from '../../views/TodoList';
 import DeleteIcon from '@mui/icons-material/Delete';
-import axios from 'axios';
 
 const ButtonText = {
   ADD: 'Add',
@@ -21,8 +20,6 @@ const buttonIcon = {
   ADD: <AddIcon />,
   UPDATE: <UpdateIcon />
 }
-
-
 
 class TodoApp extends React.Component {
 
@@ -40,13 +37,6 @@ class TodoApp extends React.Component {
       this.handleItemDelete = this.handleItemDelete.bind(this);
       this.handleItemEdit = this.handleItemEdit.bind(this);
       this.deleteAll = this.deleteAll.bind(this);
-      this.fetchItems = this.fetchItems.bind(this);
-    }
-
-    componentDidMount() {
-
-      this.fetchItems();
-
     }
   
     render() {
@@ -138,26 +128,6 @@ class TodoApp extends React.Component {
         inputButtonText: ButtonText.ADD,
         inputButtonIcon: buttonIcon.UPDATE
       });
-    }
-
-    async fetchItems () {
-
-      try {
-
-        let itemsRes = await axios.get(`https://my-json-server.typicode.com/OsamaShahid/dev/items`);
-
-        if (itemsRes.data) {
-          this.setState(state => ({
-            items: itemsRes.data
-          }));
-        }
-
-      } catch (error) {
-
-        console.log(error);
-
-      }
-
     }
 
   }
