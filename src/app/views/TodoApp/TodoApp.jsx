@@ -37,6 +37,13 @@ class TodoApp extends React.Component {
       this.handleItemDelete = this.handleItemDelete.bind(this);
       this.handleItemEdit = this.handleItemEdit.bind(this);
       this.deleteAll = this.deleteAll.bind(this);
+      this.fetchItems = this.fetchItems.bind(this);
+    }
+
+    componentDidMount() {
+
+      this.fetchItems();
+    
     }
   
     render() {
@@ -130,6 +137,38 @@ class TodoApp extends React.Component {
       });
     }
 
+    
+    async fetchItems () {
+
+      try {
+
+        const itemsUrl = `https://my-json-server.typicode.com/OsamaShahid/dev/items`;
+        const itemsHeaders = new Headers({
+          'Content-Type': 'application/json'
+        });
+        const itemsRequest = new Request(itemsUrl, {
+          method: 'GET',
+          headers: itemsHeaders,
+          mode: 'cors',
+          cache: 'default',
+        });
+
+        let itemsRes = await fetch(itemsRequest);
+
+        if (itemsRes.ok) {
+          itemsRes = await itemsRes.json();
+          this.setState(state => ({
+            items: itemsRes
+          }));
+        }
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+
+    }
   }
   
   
