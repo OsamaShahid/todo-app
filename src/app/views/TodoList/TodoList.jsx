@@ -26,12 +26,14 @@ class TodoList extends React.Component {
 
     handleEdit(item, e) {
       this.props.onEdit(item);
-  }
+    }
 
     render() {
+
+      const { items } = this.props;
       return (
         <Box>
-          {this.props.items.length > 0 && <TableContainer component={Paper}>
+          {items.length ? <TableContainer component={Paper}>
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
               <TableHead>
                 <TableRow>
@@ -41,7 +43,7 @@ class TodoList extends React.Component {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {this.props.items.map((item) => (
+                {items.map((item) => (
                   <TableRow
                     key={`${item.id}-${item.text}`}
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -66,7 +68,7 @@ class TodoList extends React.Component {
                 ))}
               </TableBody>
             </Table>
-          </TableContainer>}
+          </TableContainer> : null}
         </Box>
       );
     }

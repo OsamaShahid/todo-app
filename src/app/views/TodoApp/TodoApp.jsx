@@ -1,12 +1,12 @@
 import * as React from 'react';
-import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
 import UpdateIcon from '@mui/icons-material/Update';
 import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import TodoList from '../../views/TodoList';
 import DeleteIcon from '@mui/icons-material/Delete';
 import axios from 'axios'
+import TodoList from '../../views/TodoList';
+import GenericButton from '../../components';
+import Input from '../../views/Input';
 
 const ButtonText = {
   ADD: 'Add',
@@ -48,25 +48,23 @@ class TodoApp extends React.Component {
     }
   
     render() {
+      const { text, inputButtonText, inputButtonIcon, items} = this.state;
       return (
         <Box sx={{ '& > :not(style)': { m: 1 } }}>
-            <TextField id="new-todo" onChange={this.handleChange} size="small" label="What needs to be done?" variant="outlined" value={this.state.text} />
-            {!this.state.updatingItem && <Button variant={buttonVariant.OUTLINED} onClick={this.handleSubmit} startIcon={this.state.inputButtonIcon}>
-                {this.state.inputButtonText}
-            </Button>}
-             {this.state.updatingItem && <Button variant="outlined" onClick={this.handleSubmit} startIcon={<UpdateIcon />}>
-                Update
-            </Button>}
-            <TodoList items={this.state.items} onDelete={this.handleItemDelete} onEdit={this.handleItemEdit} />
-            {this.state.items.length && <Button variant="outlined" onClick={(e) => this.deleteAll(e)} startIcon={<DeleteIcon />}>
+            <Input id="new-todo" onChange={this.handleChange} size="small" label="What needs to be done?" variant="outlined" text={text} />
+            <GenericButton variant={buttonVariant.OUTLINED} onClick={this.handleSubmit} startIcon={inputButtonIcon}>
+                {inputButtonText}
+            </GenericButton>
+            <TodoList items={items} onDelete={this.handleItemDelete} onEdit={this.handleItemEdit} />
+            {items.length ? <GenericButton variant="outlined" onClick={(e) => this.deleteAll(e)} startIcon={<DeleteIcon />}>
               Delete Tasks
-            </Button>}
+            </GenericButton> : null}
         </Box>
       );
     }
   
-    handleChange(e) {
-      this.setState({ text: e.target.value });
+    handleChange(text) {
+      this.setState({ text });
     }
   
     handleSubmit(e) {
@@ -75,30 +73,23 @@ class TodoApp extends React.Component {
       }
 
       if (!this.state.updatingItem) {
-        const newItem = {
+        
+        let newItem = {
           text: this.state.text,
-          id: Date.now()
+          id: this.state.items.length ? (Math.max.apply(Math, this.state.items.map(function(itm) { return itm.id; })) + 1) : 500
         };
-        this.setState(state => ({
-          items: state.items.concat(newItem),
-          text: ''
-        }));
-      } else {
 
+        this.saveItem(newItem);
+
+      } else {
 
         const items = this.state.items;
         const itemIndex = this.state.items.indexOf(this.state.updatingItem);
-        items[itemIndex] = {
+
+        this.updateItem({
           text: this.state.text,
           id: this.state.updatingItem.id
-        };
-        this.setState(state => ({
-          items,
-          text: '',
-          updatingItem: null,
-          inputButtonText: ButtonText.ADD,
-          inputButtonIcon: buttonIcon.UPDATE
-        }));
+        }, items, itemIndex);
 
       }
     }
@@ -108,12 +99,8 @@ class TodoApp extends React.Component {
       if (this.state.updatingItem === item) {
         return;
       }
-      const items = this.state.items;
-      const itemIndex = this.state.items.indexOf(item);
-      items.splice(itemIndex, 1);
-      this.setState(state => ({
-          items
-      }));
+
+      this.deleteItem(item);
         
     }
 
@@ -130,24 +117,122 @@ class TodoApp extends React.Component {
 
     deleteAll(e) {
 
-      this.setState({
-        items: [],
-        updatingItem: null,
-        inputButtonText: ButtonText.ADD,
-        inputButtonIcon: buttonIcon.UPDATE
-      });
+      this.deleteItems(this.state.items);
     }
 
     async fetchItems () {
 
       try {
 
-        let itemsRes = await axios.get(`https://my-json-server.typicode.com/OsamaShahid/dev/items`);
+        let itemsRes = await axios.get(`http://localhost:3000/api/todo-items`);
 
-        if (itemsRes.data) {
+        if (itemsRes?.data?.data) {
           this.setState(state => ({
-            items: itemsRes.data
+            items: itemsRes.data.data
           }));
+        }
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+
+    }
+
+    async saveItem (item) {
+
+      try {
+
+        let itemsRes = await axios.post(`http://localhost:3000/api/todo-item`, item);
+
+        if (itemsRes?.data?.success) {
+
+          this.setState(state => ({
+            items: state.items.concat(item),
+            text: ''
+          }));
+
+        }
+
+      } catch (error) {
+
+        console.log(error);
+      }
+
+    }
+
+    async updateItem (updatedItem, items, itemIndex) {
+
+      try {
+
+        let itemsRes = await axios.put(`http://localhost:3000/api/todo-item`, updatedItem);
+
+        if (itemsRes?.data?.success) {
+
+          items[itemIndex] = updatedItem;
+            this.setState(state => ({
+              items,
+              text: '',
+              updatingItem: null,
+              inputButtonText: ButtonText.ADD,
+              inputButtonIcon: buttonIcon.UPDATE
+            }));
+
+        }
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+
+    }
+
+    async deleteItem (item) {
+
+      try {
+
+        let itemsRes = await axios.delete(`http://localhost:3000/api/todo-item/${item.id}`);
+
+        if (itemsRes?.data?.success) {
+
+          this.setState(state => ({
+            items: state.items.filter(listItem => (item !== listItem))
+          }));
+
+        }
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+
+    }
+
+    async deleteItems (items) {
+
+      try {
+
+        items = items.map(item => item.id);
+
+        let itemsRes = await axios.delete(`http://localhost:3000/api/todo-items`,  {
+          headers: {},
+          data: {
+            ids: items
+          }
+        });
+
+        if (itemsRes?.data?.success) {
+
+          this.setState({
+            items: [],
+            updatingItem: null,
+            inputButtonText: ButtonText.ADD,
+            inputButtonIcon: buttonIcon.UPDATE
+          });
+
         }
 
       } catch (error) {
