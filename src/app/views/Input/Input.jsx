@@ -13,9 +13,9 @@ class Input extends React.Component {
     }
 
     render() {
-        const { text } = this.props;
+        const { text, size, label, variant } = this.props;
       return (
-        <TextField id="new-todo" onChange={(e) => this.handleChange(e)} size="small" label="What needs to be done?" variant="outlined" value={text} />
+        <TextField id="new-todo" onChange={(e) => this.handleChange(e)} size={size} label={label} variant={variant} value={text} />
       );
     }
   }

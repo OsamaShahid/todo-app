@@ -34,7 +34,7 @@ class TodoList extends React.Component {
       return (
         <Box>
           {items.length ? <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <Table sx={{ minWidth: 650 }} aria-label="todo-list table">
               <TableHead>
                 <TableRow>
                   <TableCell>Id</TableCell>
